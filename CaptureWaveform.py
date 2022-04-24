@@ -1,6 +1,5 @@
 ﻿import sys
 import time
-import json
 from ctypes import *
 import matplotlib.pyplot as plt
 
@@ -16,7 +15,6 @@ SpecifyDevIdx.argtypes = [c_int]
 SpecifyDevIdx(c_int(7))
 print("1. Set the current oscilloscope device number to 7 (OSCH02)!")
 
-
 # 2. Turn on the device
     # unsigned long __stdcall DeviceOpen()
 DeviceOpen = OBJdll.DeviceOpen
@@ -29,7 +27,6 @@ else:
     print("2. Oscilloscope device connection failed!")
     sys.exit(0)
 
-    
 # 3. Get the first address of the data buffer
     # unsigned char* __stdcall GetBuffer4Wr(int index)
 GetBuffer4Wr = OBJdll.GetBuffer4Wr
@@ -70,7 +67,6 @@ SetInfo(c_double(1),  c_double(0),  c_ubyte(0x11),  c_int(0),   c_uint(0),  c_ui
 
 print("4. Set the buffer used to be 128K bytes (64K bytes per channel)")
 
-  
 # 5. Set the oscilloscope sample rate 976Khz
     #unsigned char USBCtrlTrans( unsigned char Request,  unsigned short Value,  unsigned long outBufSize )
 #USBCtrlTrans = OBJdll.USBCtrlTrans
@@ -147,7 +143,6 @@ print("9. Control the device to start AD acquisition")
 time.sleep(0.200)
 print("X: sleep 200ms waiting for collection.... ")
 
-
 # 10. Query whether AD collection and storage are completed. If the collection and storage are completed, the return value is 33.
 rFillUp = USBCtrlTransSimple(c_ulong(0x50))
 
@@ -171,7 +166,6 @@ else:
     print("11. Failed to transfer the acquired data!")
     sys.exit(0)
 
-
 #  chA and chB data, 64K data volume per channel
 M = 64 * 1024 
 chADataArray = (c_ubyte*M)()
@@ -184,15 +178,11 @@ for i in range(0, M):
     chADataArray[i] = g_pBuffer[i * 2]
     chBDataArray[i] = g_pBuffer[i * 2 + 1]
     timeDataArray.append(i/976000) #oscilloscope sample rate 976Khz
-    # 0-255 on the DAC give -5V to 5V on the scope:
-    chADataArrayScaled.append(10 * (chADataArray[i] -128) / 256)
-    chBDataArrayScaled.append(10 * (chBDataArray[i] -128) / 256)
+    # 0-255 on the ADC give -5V to 5V on the scope:
+    chADataArrayScaled.append(10 * (chADataArray[i] - 128) / 256)
+    chBDataArrayScaled.append(10 * (chBDataArray[i] - 128) / 256)
 
-# newline
-print
-
-print(" --------------------------------------------------------------------------------------------------")
-
+# Use MatPlotLib to plot the waveforms 
 fig, ax = plt.subplots()
 
 ax.set(xlabel='time (s)', ylabel='voltage (V)', title='Keysight U2701A')
@@ -204,36 +194,10 @@ ax.grid()
 plt.ylim([-5, 5])
 plt.show()
 
-# chA Print the collected data print (100)
-for idx in range(91,191):
-    print(" chA: " + str(chADataArray[idx]),)
-    if idx != 0 and idx % 10 == 0 :
-        print
-
-print
-print(" --------------------------------------------------------------------------------------------------")
-print
-
-# chB Print(the collected data (print(100)
-for idx in range(91,191):
-    print(" chB: " + str(chBDataArray[idx]),)
-    if idx != 0 and idx % 10 == 0 :
-        print
-
-print
-print(" --------------------------------------------------------------------------------------------------")
-
-# newline
-print
-
-    
-# 999. Turn off the device
+# 12. Turn off the device
     # unsigned long __stdcall DeviceClose()
 DeviceClose = OBJdll.DeviceClose
 DeviceClose.restype = c_ulong
 DeviceClose()
 
-print("999. Turn off the device")
-print
-print
-print
+print("12. Turn off the device")

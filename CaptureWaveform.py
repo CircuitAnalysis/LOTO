@@ -185,7 +185,7 @@ for i in range(0, M):
 # Use MatPlotLib to plot the waveforms 
 fig, ax = plt.subplots()
 
-ax.set(xlabel='time (s)', ylabel='voltage (V)', title='Keysight U2701A')
+ax.set(xlabel='time (s)', ylabel='voltage (V)', title='LOTO OSCH02')
 
 ax.plot(timeDataArray, chADataArrayScaled)
 ax.plot(timeDataArray, chBDataArrayScaled)
